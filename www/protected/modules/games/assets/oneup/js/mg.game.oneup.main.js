@@ -92,8 +92,11 @@ MG_GAME_ONEUP = function ($) {
                 counters:true
             });
         },
-        actions:function (action, click_parent) {
+        actions:function (action, click_parent, action_callback) {
             var continue_action = '';
+            if(action_callback === undefined) {
+              action_callback = $.noop;
+            }
 
             console_log('call for ' + action + " - click from: " + click_parent);
             MG_GAME_ONEUP.oneup_hide_curtain();
@@ -359,7 +362,7 @@ MG_GAME_ONEUP = function ($) {
                                         });
                                     });
                                 }
-                            });
+                            }).after(action_callback);
                         });
                     });
                     break;
@@ -1255,10 +1258,10 @@ MG_GAME_ONEUP = function ($) {
 
                     // prevent bind events again after logout/login
                     if ($("#main_screen").find(".username").html() === '') {
-                        $("a[location='main_screen']").on('click', function (e) {
+                        $("a[location='main_screen']").on('click', function (e, callback) {
                             e.stopPropagation();
                             e.preventDefault();
-                            MG_GAME_ONEUP.actions('main_screen', 'menu');
+                            MG_GAME_ONEUP.actions('main_screen', 'menu', callback);
                         });
 
                         $("a[location='game_customize']").on('click', function (e) {
@@ -1540,7 +1543,9 @@ MG_GAME_ONEUP = function ($) {
                     }
                 } else if ($(".index_screen").not(":visible")) {
                     if ($("#main_screen").is(":visible")) {
-                        $("#menu-right a[location='main_screen']").click();
+                        $("#menu-right a[location='main_screen']").trigger("click", [function() {
+                          $('#main_screen div[playedgameid="'+response.playedGameId+'"] .start_game').click();
+                        }]);
                     }
                     $().toastmessage("showToast", {
                         text:game_title + ": " + " It's your turn!",
